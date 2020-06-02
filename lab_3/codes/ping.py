@@ -36,9 +36,9 @@ def raw_socket(dst_addr,imcp_packet):
     '''
 def request_ping(data_type,data_code,data_checksum,data_ID,data_Sequence,payload_body):
 
-    imcp_packet = struct.pack('>BBHHH2052s',data_type,data_code,data_checksum,data_ID,data_Sequence,payload_body)
+    imcp_packet = struct.pack('>BBHHH32s',data_type,data_code,data_checksum,data_ID,data_Sequence,payload_body)
     icmp_chesksum = chesksum(imcp_packet)
-    imcp_packet = struct.pack('>BBHHH2052s',data_type,data_code,icmp_chesksum,data_ID,data_Sequence,payload_body)
+    imcp_packet = struct.pack('>BBHHH32s',data_type,data_code,icmp_chesksum,data_ID,data_Sequence,payload_body)
     return imcp_packet
     '''
     reply ping
@@ -51,7 +51,7 @@ def reply_ping(send_request_ping_time,rawsocket,data_Sequence,timeout = 2):
         if what_ready[0] == []:  # Timeout
             return -1
         time_received = time.time()
-        received_packet, addr = rawsocket.recvfrom(4096)
+        received_packet, addr = rawsocket.recvfrom(4096)    # data length should not exceed this buffer
         icmpHeader = received_packet[20:28]
         type, code, checksum, packet_id, sequence = struct.unpack(
             ">BBHHH", icmpHeader
@@ -74,7 +74,7 @@ def ping(host):
 #        li.append(i)
     dst_addr = socket.gethostbyname(host)
     print("now Ping {0} [{1}] with 32 bytes of data:".format(host,dst_addr))
-    for i in range(0,5):
+    for i in range(0,17):
         icmp_packet = request_ping(data_type,data_code,data_checksum,data_ID,data_Sequence + i,payload_body)
 #        icmp_packet = request_ping(data_type,data_code,data_checksum,data_ID,data_Sequence + i,li)
         send_request_ping_time,rawsocket,addr = raw_socket(dst_addr,icmp_packet)
